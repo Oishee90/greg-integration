@@ -13,6 +13,8 @@ import Setnew from "./Components/Pages/Setnew";
 
 import UserManagement from "./Components/Dashboard/AdminLayout/UserManagementTable";
 import Settings from "./Components/Dashboard/AdminLayout/Settings/Settings";
+import { Provider } from "react-redux";
+import { store } from "./Redux/store";
 
 const router = createBrowserRouter([
   {
@@ -53,6 +55,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
   </React.StrictMode>
 );

@@ -6,8 +6,11 @@ import TermsCondition from "./TermsCondition";
 import Privacy from "./Privacy";
 import { MdOutlineShield } from "react-icons/md";
 
+import { useGetTermsQuery } from "../../../../Redux/feature/authapi";
+
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("terms");
+  const { data: TermsPrivacy ,refetch} = useGetTermsQuery();
 
   return (
     <div className="flex-1 m-4  overflow-y-auto bg-[#FFFFFF] rounded-3xl p-6 px-6">
@@ -45,8 +48,10 @@ const Settings = () => {
 
         {/* Tab Content */}
 
-        {activeTab === "terms" && <TermsCondition />}
-        {activeTab === "privacy" && <Privacy />}
+        {activeTab === "terms" && (
+          <TermsCondition TermsPrivacy={TermsPrivacy} refetch={refetch} />
+        )}
+        {activeTab === "privacy" && <Privacy TermsPrivacy={TermsPrivacy} refetch={refetch} />}
       </div>
     </div>
   );
