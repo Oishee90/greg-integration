@@ -8,14 +8,11 @@ const TermsCondition = ({ TermsPrivacy, refetch }) => {
 
   const [content, setContent] = useState("");
   const [updateTerms, { isLoading }] = useUpdateTermsMutation();
-
+  console.log(TermsPrivacy);
   // Load dynamic content: id = 1
   useEffect(() => {
-    if (TermsPrivacy && TermsPrivacy.length > 0) {
-      const item = TermsPrivacy.find((t) => t.id === 1);
-      if (item) {
-        setContent(item.content);
-      }
+    if (TermsPrivacy?.content) {
+      setContent(TermsPrivacy.content);
     }
   }, [TermsPrivacy]);
 
@@ -66,7 +63,7 @@ const TermsCondition = ({ TermsPrivacy, refetch }) => {
           ref={editor}
           value={content}
           config={config}
-          onBlur={(newContent) => setContent(newContent)}
+          onChange={(newContent) => setContent(newContent)}
         />
       </div>
     </div>

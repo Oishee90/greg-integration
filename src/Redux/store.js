@@ -7,12 +7,14 @@ import { authReducer } from "./feature/authSlice";
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth", "chat"], 
+  whitelist: ["auth"], // Only persist auth (and chat if you have one)
+  blacklist: [apiSlice.reducerPath], // Never persist RTK Query cache
 };
 
 const rootReducer = combineReducers({
   [apiSlice.reducerPath]: apiSlice.reducer,
-  auth: authReducer, //
+  auth: authReducer,
+  // chat: chatReducer, // if you have one
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -22,18 +24,17 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
-        ignoredActionPaths: [
-          "register",
-          "rehydrate",
-          "baseApi.meta.baseQueryMeta.request",
-          "baseApi.meta.baseQueryMeta.response",
+        // You can still keep these if you want, but they're not needed anymore
+        ignoredActions: [
+          "persist/PERSIST",
+          "persist/REHYDRATE",
+          "persist/PURGE",
+          // Optional: ignore RTK Query actions completely
+          // ...or just rely on blacklist above
         ],
       },
     }).concat(apiSlice.middleware),
 });
 
-const persistor = persistStore(store); // ✅ correct spelling
-
-// ✅ Final export
-export { store, persistor };
+export const persistor = persistStore(store);
+export default store;

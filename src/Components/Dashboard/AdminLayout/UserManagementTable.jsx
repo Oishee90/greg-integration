@@ -8,6 +8,8 @@ import {
   useGetAllUserQuery,
   useSuspendUserMutation,
 } from "../../../Redux/feature/authapi";
+import LoadingSpinner from "../../LoadingSpinner";
+import { useSelector } from "react-redux";
 
 const statusStyles = {
   Active: "bg-teal-100 text-teal-700",
@@ -15,7 +17,7 @@ const statusStyles = {
   Suspended: "bg-red-100 text-red-700",
 };
 
-const STATIC_SUSPEND_REASON = "Violation of policy"; // STATIC REASON
+const STATIC_SUSPEND_REASON = "Violation of policy";
 
 const Avatar = ({ name }) => {
   const initials = name
@@ -69,6 +71,11 @@ const ActionDropdown = ({ user, onClose, onAction }) => {
 const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const SOCKET_URL = import.meta.env.VITE_WS_URL;
+
+  const token = useSelector((state) => state.auth.access_token);
+  console.log("token", token);
   const menuRef = useRef(null);
 
   const {
@@ -80,6 +87,7 @@ const UserManagement = () => {
   const [suspendUser] = useSuspendUserMutation();
   const [activateUser] = useActivateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -90,13 +98,58 @@ const UserManagement = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // WebSocket connection
+  useEffect(() => {
+    if (!token) return;
+
+    //  Correct query param format
+    const newSocket = new WebSocket(`${SOCKET_URL}?token=${token}`);
+    setSocket(newSocket);
+
+    newSocket.onopen = () => {
+      console.log("Connected to WebSocket server");
+    };
+
+    newSocket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log("Received Notification:", data);
+
+        const title = data?.title || "New Notification";
+        console.log("Notification Title:", title);
+        const message = data?.message || "";
+        console.log("Notification Message:", message);
+
+        // toast.success(`📢 ${title}`, {
+        //   style: { background: "#0f172a", color: "#fff" },
+        // });
+        refetchUsers();
+        // dispatch(refetchCount());
+      } catch (err) {
+        console.error("WebSocket message parsing error:", err);
+      }
+    };
+
+    newSocket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    newSocket.onerror = (err) => {
+      console.error("WebSocket error:", err);
+    };
+
+    return () => {
+      newSocket.close(); // clean up
+    };
+  }, [token]);
+
   if (isLoading) {
-    return <p className="p-6 text-xl text-center">Loading Users...</p>;
+    return <LoadingSpinner></LoadingSpinner>;
   }
 
   const userList = userData?.data || [];
 
-  const usersPerPage = 5;
+  const usersPerPage = 10;
   const totalPages = Math.ceil(userList.length / usersPerPage);
   const users = userList.slice(
     (currentPage - 1) * usersPerPage,
@@ -109,10 +162,18 @@ const UserManagement = () => {
 
   const closeDropdown = () => setOpenDropdownId(null);
 
-  // ==========================
   //  User ACTION HANDLER
-  // ==========================
+
   const handleUserAction = async (user, action) => {
+    console.log("Action:", action, "on User:", user);
+    if (user?.role === "Admin") {
+      Swal.fire({
+        icon: "error",
+        title: "Action Not Allowed",
+        text: "You cannot modify an Admin account!",
+      });
+      return;
+    }
     if (action === "Suspend") {
       const confirmPopup = await Swal.fire({
         title: "Are you sure?",
@@ -154,7 +215,7 @@ const UserManagement = () => {
       try {
         await activateUser({
           user_id: user.id,
-          reason: STATIC_SUSPEND_REASON, // static reason
+          reason: STATIC_SUSPEND_REASON,
         }).unwrap();
 
         Swal.fire("Success!", "User has been activated.", "success");
@@ -212,7 +273,7 @@ const UserManagement = () => {
 
           {/* Desktop Table */}
           <div className="hidden mt-2 md:block">
-            <div className="overflow-y-auto max-h-96 thin-scrollbar rounded-xl">
+            <div className="overflow-y-auto max-h-[600px] thin-scrollbar rounded-xl">
               <table className="w-full rounded-xl">
                 <thead className="sticky top-0 z-40 text-sm font-medium text-left text-white bg-[#16A8AD] rounded-t-xl">
                   <tr>
@@ -288,6 +349,91 @@ const UserManagement = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* -------------------------------------- */}
+          {/* MOBILE CARD VIEW */}
+          {/* -------------------------------------- */}
+          <div className="mt-4 space-y-4 md:hidden">
+            {users.map((user) => (
+              <div
+                key={user.id}
+                className="p-4 bg-white border border-gray-100 shadow rounded-xl"
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar name={user?.full_name} />
+                  <div>
+                    <p className="text-lg font-bold">{user.full_name}</p>
+                    <p className="text-sm text-gray-600">{user.email}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      user?.admin_suspended
+                        ? statusStyles["Suspended"]
+                        : user?.is_active
+                        ? statusStyles["Active"]
+                        : statusStyles["Inactive"]
+                    }`}
+                  >
+                    {user?.admin_suspended
+                      ? "Suspended"
+                      : user.is_active
+                      ? "Active"
+                      : "Inactive"}
+                  </span>
+                </div>
+
+                <div className="mt-3 text-sm text-gray-600">
+                  <p>
+                    <span className="font-semibold">Join Date:</span>{" "}
+                    {user?.date_joined}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Last Active:</span>{" "}
+                    {user?.last_active_readable}
+                  </p>
+                </div>
+
+                {/* Mobile Actions */}
+                <div className="mt-4">
+                  <button
+                    onClick={() => toggleDropdown(user?.id)}
+                    className="flex items-center justify-between w-full px-4 py-2 bg-gray-100 rounded-lg"
+                  >
+                    Actions
+                    <MoreVertical size={18} />
+                  </button>
+
+                  {openDropdownId === user.id && (
+                    <div className="mt-2 overflow-hidden border rounded-lg">
+                      <button
+                        onClick={() => handleUserAction(user, "Suspend")}
+                        className="w-full px-4 py-2 text-left text-red-600 bg-red-50 hover:bg-red-100"
+                      >
+                        Suspend
+                      </button>
+
+                      <button
+                        onClick={() => handleUserAction(user, "Activate")}
+                        className="w-full px-4 py-2 text-left text-teal-700 bg-teal-50 hover:bg-teal-100"
+                      >
+                        Activate
+                      </button>
+
+                      <button
+                        onClick={() => handleUserAction(user, "Delete")}
+                        className="w-full px-4 py-2 text-left text-red-700 bg-gray-50 hover:bg-gray-100"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Pagination */}

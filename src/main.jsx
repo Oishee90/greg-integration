@@ -14,12 +14,20 @@ import Setnew from "./Components/Pages/Setnew";
 import UserManagement from "./Components/Dashboard/AdminLayout/UserManagementTable";
 import Settings from "./Components/Dashboard/AdminLayout/Settings/Settings";
 import { Provider } from "react-redux";
-import { store } from "./Redux/store";
+
+import { PrivateRoute } from "./routes/PrivateRoute";
+import store from "./Redux/store";
+import PublicRoute from "./routes/PublicRoute";
 
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <PublicRoute>
+        {" "}
+        <Login />
+      </PublicRoute>
+    ),
   },
   {
     path: "/forgot",
@@ -39,15 +47,27 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <AdminDashboard></AdminDashboard>,
+        element: (
+          <PrivateRoute>
+            <AdminDashboard></AdminDashboard>
+          </PrivateRoute>
+        ),
       },
       {
         path: "/user-management",
-        element: <UserManagement></UserManagement>,
+        element: (
+          <PrivateRoute>
+            <UserManagement></UserManagement>
+          </PrivateRoute>
+        ),
       },
       {
         path: "/settings",
-        element: <Settings></Settings>,
+        element: (
+          <PrivateRoute>
+            <Settings></Settings>
+          </PrivateRoute>
+        ),
       },
     ],
   },

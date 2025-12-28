@@ -4,7 +4,7 @@ import JoditEditor from "jodit-react";
 import toast, { Toaster } from "react-hot-toast";
 import { useUpdatePrivacyMutation } from "../../../../Redux/feature/authapi";
 
-const Privacy = ({ TermsPrivacy, refetch }) => {
+const Privacy = ({ PrivacyPolicy, refetch }) => {
   const editor = useRef(null);
 
   const [content, setContent] = useState("");
@@ -12,13 +12,10 @@ const Privacy = ({ TermsPrivacy, refetch }) => {
 
   // Load dynamic privacy policy (id = 2)
   useEffect(() => {
-    if (TermsPrivacy && TermsPrivacy.length > 0) {
-      const item = TermsPrivacy.find((t) => t.id === 2);
-      if (item) {
-        setContent(item.content);
-      }
+    if (PrivacyPolicy?.content) {
+      setContent(PrivacyPolicy.content);
     }
-  }, [TermsPrivacy]);
+  }, [PrivacyPolicy]);
 
   const config = {
     readonly: false,

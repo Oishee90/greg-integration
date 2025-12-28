@@ -42,7 +42,10 @@ export const authapi = apiSlice.injectEndpoints({
     }),
     // terms and privacy
     getTerms: builder.query({
-      query: () => "/admin-terms-and-condition/",
+      query: () => "/terms/",
+    }),
+     getPolicy: builder.query({
+      query: () => "/privacy/",
     }),
     updateTerms: builder.mutation({
       query: ({ id, content }) => ({
@@ -90,4 +93,5 @@ export const {
   useGetTermsQuery,
   useUpdateTermsMutation,
   useUpdatePrivacyMutation,
+  useGetPolicyQuery
 } = authapi;
