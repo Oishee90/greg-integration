@@ -92,13 +92,13 @@ const Login = () => {
             </button>
           </div>
 
-          <div className="">
+          {/* <div className="">
             <NavLink to="/forgot">
               <h1 className="text-base text-white cursor-pointer hover:underline">
                 Forgot Password
               </h1>
             </NavLink>
-          </div>
+          </div> */}
 
           <button
             disabled={isLoading}

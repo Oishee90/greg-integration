@@ -40,6 +40,10 @@ export const authapi = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    // feedback
+       getAllFeedback: builder.query({
+      query: () => "/feedback/admin/list/",
+    }),
     // terms and privacy
     getTerms: builder.query({
       query: () => "/terms/",
@@ -93,5 +97,6 @@ export const {
   useGetTermsQuery,
   useUpdateTermsMutation,
   useUpdatePrivacyMutation,
-  useGetPolicyQuery
+  useGetPolicyQuery,
+  useGetAllFeedbackQuery
 } = authapi;

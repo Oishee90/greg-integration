@@ -63,7 +63,7 @@ const TermsCondition = ({ TermsPrivacy, refetch }) => {
           ref={editor}
           value={content}
           config={config}
-          onChange={(newContent) => setContent(newContent)}
+          onBlur={(newContent) => setContent(newContent)}
         />
       </div>
     </div>

@@ -18,6 +18,8 @@ import { Provider } from "react-redux";
 import { PrivateRoute } from "./routes/PrivateRoute";
 import store from "./Redux/store";
 import PublicRoute from "./routes/PublicRoute";
+import { User } from "lucide-react";
+import UserFeedback from "./Components/Dashboard/AdminLayout/Feed/UserFeedback";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +60,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <UserManagement></UserManagement>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/user-feedback",
+        element: (
+          <PrivateRoute>
+            <UserFeedback></UserFeedback>
           </PrivateRoute>
         ),
       },

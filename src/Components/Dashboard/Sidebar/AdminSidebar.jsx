@@ -7,19 +7,21 @@ import { FiLogOut } from "react-icons/fi";
 import { useDispatch } from "react-redux";
 import { userLoggedOut } from "../../../Redux/feature/authSlice";
 import { persistor } from "../../../Redux/store";
+import { TbMessagePlus } from "react-icons/tb";
 const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
- const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const isActiveDashboard = location.pathname === "/";
   const isActiveUserManagement = location.pathname === "/user-management";
+  const isActiveUserFeedback = location.pathname === "/user-feedback";
   const isActiveSettings = location.pathname === "/settings";
   const handleLogout = () => {
     // Clear user data from localStorage
-  dispatch(userLoggedOut ());
+    dispatch(userLoggedOut());
     persistor.purge();
     navigate("/login");
-  }
+  };
   return (
     <aside className="flex flex-col items-center  gap-4 px-2 py-6 text-white bg-[#16a8ad] no-scrollbar">
       <NavLink to="/" className="flex items-center justify-between mt-9">
@@ -47,6 +49,20 @@ const AdminSidebar = () => {
         </button>
       </NavLink>
       <NavLink
+        to="/user-feedback"
+        className="flex items-center justify-between mt-3"
+      >
+        {" "}
+        <button
+          className={`flex items-center justify-center px-2 py-2 transition rounded-lg hover:bg-teal-600 ${
+            isActiveUserFeedback ? "till text-white " : "text-white"
+          }`}
+        >
+          {" "}
+          <TbMessagePlus size={24} />
+        </button>
+      </NavLink>
+      <NavLink
         to="/settings"
         className="flex items-center justify-between mt-3"
       >
@@ -61,7 +77,7 @@ const AdminSidebar = () => {
         </button>
       </NavLink>
       <NavLink
-     onClick={handleLogout}
+        onClick={handleLogout}
         className="flex items-center justify-center w-10 h-10 mt-auto transition rounded-lg hover:bg-teal-600"
       >
         {" "}
